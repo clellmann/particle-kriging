@@ -1,18 +1,18 @@
-# VERSION 1.10.2
-# AUTHOR: Matthieu "Puckel_" Roisil
-# DESCRIPTION: Basic Airflow container
-# BUILD: docker build --rm -t puckel/docker-airflow .
-# SOURCE: https://github.com/puckel/docker-airflow
+# VERSION 1.10.3
+# AUTHOR: Christian Lellmann
+# DESCRIPTION: Kriging system Airflow container
+# BUILD: docker build --rm -t clellmann/kriging-airflow .
+# SOURCE: https://github.com/clellmann/particle-kriging
 
 FROM python:3.6-slim
-LABEL maintainer="Puckel_"
+LABEL maintainer="clellmann"
 
 # Never prompts the user for choices on installation/configuration of packages
 ENV DEBIAN_FRONTEND noninteractive
 ENV TERM linux
 
 # Airflow
-ARG AIRFLOW_VERSION=1.10.2
+ARG AIRFLOW_VERSION=1.10.3
 ARG AIRFLOW_HOME=/usr/local/airflow
 ARG AIRFLOW_DEPS=""
 ARG PYTHON_DEPS=""
@@ -72,6 +72,7 @@ RUN set -ex \
 
 COPY script/entrypoint.sh /entrypoint.sh
 COPY config/airflow.cfg ${AIRFLOW_HOME}/airflow.cfg
+COPY requirements.txt /requirements.txt
 
 RUN chown -R airflow: ${AIRFLOW_HOME}
 
