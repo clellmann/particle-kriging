@@ -1,2 +1,2 @@
 # particle-kriging
-Kriging system for particle prediction with Airflow orchestration
+Particle Kriging contains scripts for the Apache Airflow workflow management tool that is used to build a learning and prediction system that teaches an algorithm based on the geostatistical "Ordinary Kriging" method at periodic intervals and predicts particulate matter for locations without a measurement station. Additionally, a validation framework will also be set up to demonstrate the functional performance of the algorithm through cross-validation and to optimize the hyperparameters using grid-search.
