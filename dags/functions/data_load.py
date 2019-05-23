@@ -1,5 +1,6 @@
 import pandas as pd
 import requests
+from datetime import datetime
 
 def transform_pm_data(response_items, bounding_box):
     """
@@ -38,10 +39,13 @@ def filter_anomalous_pm(pm_data):
     return [data for data in pm_data if (data.get('P1') is not None and data.get('P1') < 1000) and (data.get('P2') is not None and data.get('P2') < 1000)]
 
 
-def get_raw_data():
+def get_raw_data(bounding_box):
     """
     Downloads the current raw data.
 
+    Args:
+        bounding_box (list): Bounding box as lat/lon tuples NW, SE.
+    
     Returns (pandas.DataFrame): Data Frame containing the raw PM data.
     """
     API = 'http://api.luftdaten.info/static/v1/data.json'
@@ -58,6 +62,6 @@ def get_raw_data():
 
     res = requests.get(API).json()
     response_items = filter_pm_data(res)
-    base_df = pd.DataFrame(filter_anomalous_pm(transform_pm_data(response_items)))
+    base_df = pd.DataFrame(filter_anomalous_pm(transform_pm_data(response_items, bounding_box)))
     base_df['id'] = base_df.index
     return base_df
