@@ -1,2 +1,6 @@
 numpy
+scipy
 pandas
+requests
+boto3
+haversine
