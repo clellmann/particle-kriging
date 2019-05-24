@@ -17,7 +17,7 @@ def wrap_xcom_task(task_function, xcom_name, prev_task_id, **kwargs):
     return task_function(**{**kwargs, **{xcom_name: xcom}})
     
 
-def wrap_double_xcom_task(task_function, prev_task_ids, **kwargs):
+def wrap_double_xcom_task(task_function, xcom_names, prev_task_ids, **kwargs):
     """
     Wraps a function for a task with two xcoms.
 
@@ -33,4 +33,4 @@ def wrap_double_xcom_task(task_function, prev_task_ids, **kwargs):
 
     xcom0, xcom1 = ti.xcom_pull(task_ids=prev_task_ids)
 
-    return task_function(**{**kwargs, **{xcom_name[0]: xcom0, xcom_name[1]: xcom1}})
+    return task_function(**{**kwargs, **{xcom_names[0]: xcom0, xcom_names[1]: xcom1}})
