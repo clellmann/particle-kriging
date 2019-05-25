@@ -45,7 +45,7 @@ def execute_cross_validation(i, search_grid, prev_task_id, **kwargs):
         search_grid (dict): Current searched grid.
         prev_task_id (str): Id of the previous task.
     """
-    cross_val_tab = kwargs['ti'].xcom_pull(task_ids='push_by_returning')
+    cross_val_tab = kwargs['ti'].xcom_pull(task_ids=prev_task_id)
     statistics = []
     for j, fold in enumerate(cross_val_tab['fold'].unique()):
         train = cross_val_tab[cross_val_tab['fold'] != fold]
