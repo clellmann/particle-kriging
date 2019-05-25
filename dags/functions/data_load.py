@@ -1,6 +1,9 @@
 import pandas as pd
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
+import boto3
+import os
+from boto3.dynamodb.conditions import Attr
 
 def transform_pm_data(response_items, bounding_box):
     """
@@ -86,14 +89,14 @@ def get_raw_db_data(bounding_box, timestamp, **kwargs):
         Returns:
             str: Later timestamp
         """
-        return (datetime.strptime(START_TIME, "%Y-%m-%d %H:%M:%S") + timedelta(minutes=10)).strftime("%Y-%m-%d %H:%M:%S")
+        return (datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S") + timedelta(minutes=10)).strftime("%Y-%m-%d %H:%M:%S")
 
-    INT_TS1 = add_10min(START_TIME)
+    INT_TS1 = add_10min(timestamp)
     INT_TS2 = add_10min(INT_TS1)
 
     dynamodb = boto3.resource('dynamodb', region_name='us-west-1', aws_access_key_id=os.environ['ACCESS_KEY'], aws_secret_access_key=os.environ['SECRET'])
     table = dynamodb.Table('luftdaten')
-    response = table.scan(FilterExpression=Attr('timestamp').contains(START_TIME[:15]) | 
+    response = table.scan(FilterExpression=Attr('timestamp').contains(timestamp[:15]) | 
                         Attr('timestamp').contains(INT_TS1[:15]) | 
                         Attr('timestamp').contains(INT_TS2[:15]),
                         ProjectionExpression='sensordatavalues, #t, sensor.id, #l.longitude, #l.latitude, #l.altitude',
@@ -103,7 +106,7 @@ def get_raw_db_data(bounding_box, timestamp, **kwargs):
     i = 0
     while 'LastEvaluatedKey' in response:
         response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'],
-                            FilterExpression=Attr('timestamp').contains(START_TIME[:15]) | 
+                            FilterExpression=Attr('timestamp').contains(timestamp[:15]) | 
                             Attr('timestamp').contains(INT_TS1[:15]) | 
                             Attr('timestamp').contains(INT_TS2[:15]),
                             ProjectionExpression='sensordatavalues, #t, sensor.id, #l.longitude, #l.latitude, #l.altitude',
