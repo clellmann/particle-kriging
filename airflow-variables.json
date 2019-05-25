@@ -1,0 +1,42 @@
+{
+    "live_kriging_config": {
+        "BOUNDING_BOX": [
+            [
+                48.7,
+                9.3
+            ],
+            [
+                48.6,
+                9.4
+            ]
+        ],
+        "DISTANCE_BINS": 1500,
+        "MAX_RANGE": 10000,
+        "TARGET_GRID": 1000
+    },
+    "validate_kriging_config": {
+        "CROSS_VALIDATION_FOLDS": 2,
+        "EXECUTION_MODE": "live-data",
+        "PARAMS": {
+            "BOUNDING_BOX": [
+                [
+                    [
+                        48.7,
+                        9.3
+                    ],
+                    [
+                        48.6,
+                        9.4
+                    ]
+                ]
+            ],
+            "DISTANCE_BINS": [
+                1500
+            ],
+            "MAX_RANGE": [
+                10000
+            ],
+            "TIMESTAMP": []
+        }
+    }
+}

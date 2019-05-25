@@ -41,7 +41,7 @@ class Semivariogram():
         return y
 
 
-def fit_semivariograms_pm(variogram_df, max_range):
+def fit_semivariograms_pm(variogram_df, max_range, **kwargs):
     """
     Fits semivariograms to particulate matter data P1 and P2.
 
@@ -59,7 +59,7 @@ def fit_semivariograms_pm(variogram_df, max_range):
     return {'P1': semivariogram_exp_p1, 'P2': semivariogram_exp_p2}
 
     
-def calc_variogram_df(semivar_df, distance_bins):
+def calc_variogram_df(semivar_df, distance_bins, **kwargs):
     """
     Calculates the empirical variogram df.
 
@@ -87,7 +87,7 @@ def calc_variogram_df(semivar_df, distance_bins):
     return variogram_dist_df.drop(['dist'], axis=1).groupby('dist [m]').agg(['mean', calc_errors])
 
 
-def calc_variogram_cloud(dist_df, max_range):
+def calc_variogram_cloud(dist_df, max_range, **kwargs):
     """
     Calculates the variogram cloud df.
 

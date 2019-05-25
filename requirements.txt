@@ -4,3 +4,4 @@ pandas
 requests
 boto3
 haversine
+scikit-learn

@@ -33,7 +33,7 @@ def calculate_spatial_point_in_distance_and_bearing(start_point, distance, beari
     return (round(lat2, 5), round(lon2, 5))
 
 
-def calculate_spatial_grid(bounding_box, distance):
+def calculate_spatial_grid(bounding_box, distance, **kwargs):
     """
     Calculates an equidistant spatial grid in given bounding box.
     
@@ -53,4 +53,19 @@ def calculate_spatial_grid(bounding_box, distance):
             current_row_point = calculate_spatial_point_in_distance_and_bearing(current_row_point, distance, 180)
             grid.append(current_row_point)
         current_column_point = calculate_spatial_point_in_distance_and_bearing(current_column_point, distance, 90)
+    return grid
+
+
+def get_grid_from_test_points(test_df, **kwargs):
+    """
+    Extracts the grid points from test points.
+
+    Args:
+        test_df: Data frame with test data and spatial points.
+
+    Returns (list): List of grid points in lat/lon order.
+    """
+    grid = []
+    for index, row in test_df.iterrows():
+        grid.append((row['latitude'], row['longitude']))
     return grid

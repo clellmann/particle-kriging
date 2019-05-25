@@ -1,7 +1,7 @@
 import pandas as pd
 
 
-def calculate_dist_matrix(base_df):
+def calculate_dist_matrix(base_df, **kwargs):
     """
     Calculates the distance matrix df.
 

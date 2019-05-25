@@ -28,7 +28,7 @@ def krige_point(distance_vector, distance_matrix, semivariogram, train_values):
     return (particulate_matter, std)
 
 
-def ordinary_kriging_pm(grid, distance_df, semivariograms, train_df, max_range):
+def ordinary_kriging_pm(grid, distance_df, semivariograms, train_df, max_range, **kwargs):
     """
     Calculates the ordinary kriging predicates for given grid.
     
