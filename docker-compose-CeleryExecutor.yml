@@ -30,8 +30,8 @@ services:
             # - REDIS_PASSWORD=redispass
         env_file:
             - app.env
-        volumes:
-            - ./dags:/usr/local/airflow/dags
+        #volumes:
+            #- ./dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:
@@ -62,8 +62,8 @@ services:
         restart: always
         depends_on:
             - webserver
-        volumes:
-            - ./dags:/usr/local/airflow/dags
+        #volumes:
+            #- ./dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
@@ -83,8 +83,8 @@ services:
         restart: always
         depends_on:
             - scheduler
-        volumes:
-            - ./dags:/usr/local/airflow/dags
+        #volumes:
+            #- ./dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:

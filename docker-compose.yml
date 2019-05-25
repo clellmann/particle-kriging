@@ -20,8 +20,8 @@ services:
             - EXECUTOR=Local
         env_file:
             - app.env
-        volumes:
-            - ./dags:/usr/local/airflow/dags
+        #volumes:
+            #- ./dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         ports:

@@ -17,7 +17,7 @@
     "validate_kriging_config": {
         "CROSS_VALIDATION_FOLDS": 2,
         "EXECUTION_MODE": "live-data",
-        "PARAMS": {
+        "PARAMS_DB": {
             "BOUNDING_BOX": [
                 [
                     [
@@ -36,7 +36,29 @@
             "MAX_RANGE": [
                 10000
             ],
-            "TIMESTAMP": []
+            "TIMESTAMP": [
+                "2019-04-22 19:28:01"
+            ]
+        },
+        "PARAMS_LIVE": {
+            "BOUNDING_BOX": [
+                [
+                    [
+                        48.7,
+                        9.3
+                    ],
+                    [
+                        48.6,
+                        9.4
+                    ]
+                ]
+            ],
+            "DISTANCE_BINS": [
+                1500
+            ],
+            "MAX_RANGE": [
+                10000
+            ]
         }
     }
 }

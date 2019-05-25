@@ -48,3 +48,17 @@ def calc_validation_statistic(result_df, test_df, **kwargs):
     rmse_p2 = np.sqrt(np.mean((joined_df['P2_result'] - joined_df['P2_test'])**2))
 
     return {'RMSE_P1': rmse_p1, 'RMSE_P2': rmse_p2}
+
+
+def calc_validation_statistic_overall(statistics, **kwargs):
+    """
+    Calculates the validation overall statistics.
+
+    Args:
+        statistics (list): List of statistic dicts.
+
+    Returns (dict): Overall statistics dict.
+    """
+    statistic_df = pd.DataFrame(statistics)
+
+    return statistic_df.agg(['mean']).to_dict()
