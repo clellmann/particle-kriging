@@ -29,37 +29,40 @@ config = Variable.get('validate_kriging_config', deserialize_json=True)
 
 searching_grids = grid_search(config['PARAMS_LIVE']) if config['EXECUTION_MODE'] == 'live-data' else grid_search(config['PARAMS_DB'])
 
+def get_test_data(fold, prev_task_id, **kwargs):
+    """
+    Gets the test data for given fold.
+
+    Args:
+        fold (int): Number of fold.
+        prev_task_id (str): Id of the previous task.
+
+    Returns (pandas.DataFrame): Test data frame.
+    """
+    cross_val_tab = kwargs['ti'].xcom_pull(task_ids=prev_task_id)
+    return cross_val_tab[cross_val_tab['fold'] == fold]
+
+
+def get_train_data(fold, prev_task_id, **kwargs):
+    """
+    Gets the train data for given fold.
+
+    Args:
+        fold (int): Number of fold.
+        prev_task_id (str): Id of the previous task.
+
+    Returns (pandas.DataFrame): Train data frame.
+    """
+    cross_val_tab = kwargs['ti'].xcom_pull(task_ids=prev_task_id)
+    return cross_val_tab[cross_val_tab['fold'] != fold]
+
+
 dag = DAG(dag_id='validate_kriging', 
     description='Kriging Validation', 
     default_args=default_args, 
     schedule_interval = None, 
     catchup=False
 )
-
-def execute_cross_validation(i, search_grid, prev_task_id, **kwargs):
-    """
-    Deploys task for execution of cross validation.
-
-    Args:
-        i (int): Grid search run id.
-        search_grid (dict): Current searched grid.
-        prev_task_id (str): Id of the previous task.
-    """
-    cross_val_tab = kwargs['ti'].xcom_pull(task_ids=prev_task_id)
-    statistics = []
-    for j, fold in enumerate(cross_val_tab['fold'].unique()):
-        train = cross_val_tab[cross_val_tab['fold'] != fold]
-        test = cross_val_tab[cross_val_tab['fold'] == fold]
-
-        distance_matrix = calculate_dist_matrix(base_df=train)
-        variogram_cloud = calc_variogram_cloud(dist_df=distance_matrix, max_range=search_grid['MAX_RANGE'])
-        empirical_variogram = calc_variogram_df(semivar_df=variogram_cloud, distance_bins=search_grid['DISTANCE_BINS'])
-        semivariogram = fit_semivariograms_pm(variogram_df=empirical_variogram, max_range=search_grid['MAX_RANGE'])
-        grid = get_grid_from_test_points(test_df=test)
-        kriging = ordinary_kriging_pm(grid=grid, distance_df=distance_matrix, semivariograms=semivariogram, train_df=train, max_range=search_grid['MAX_RANGE'])
-        statistics.append(calc_validation_statistic(result_df=kriging, test_df=test))
-    return calc_validation_statistic_overall(statistics=statistics)
-
 
 for i, search_grid in enumerate(searching_grids):
     if config['EXECUTION_MODE'] == 'live-data':
@@ -87,20 +90,99 @@ for i, search_grid in enumerate(searching_grids):
         dag=dag,
     )
 
-    cross_validation = PythonOperator(
-        task_id='cross_validation'+str(i),
-        python_callable=execute_cross_validation,
-        op_kwargs={'i': i, 'search_grid': search_grid, 'prev_task_id': 'cross_validate_split'+str(i)},
-        dag=dag,
-    )
+    for j in range(config['CROSS_VALIDATION_FOLDS']):
+        test = PythonOperator(
+            task_id='test'+str(i)+str(j),
+            python_callable=get_test_data,
+            op_kwargs={'fold': j,
+                    'prev_task_id': 'cross_validate_split'+str(i)},
+            dag=dag,
+        )
 
-    result = PythonOperator(
-        task_id='result'+str(i),
-        python_callable=print_xcom_task,
-        op_kwargs={'prev_task_id': 'cross_validation'+str(i)},
-        dag=dag,
-    )
+        train = PythonOperator(
+            task_id='train'+str(i)+str(j),
+            python_callable=get_train_data,
+            op_kwargs={'fold': j,
+                    'prev_task_id': 'cross_validate_split'+str(i)},
+            dag=dag,
+        )
 
-    get_raw_data >> cross_validate_split >> cross_validation >> result
+        distance_matrix = PythonOperator(
+            task_id='distance_matrix'+str(i)+str(j),
+            python_callable=wrap_xcom_task,
+            op_kwargs={'task_function': calculate_dist_matrix, 
+                    'xcom_name': 'base_df', 
+                    'prev_task_id': 'train'+str(i)+str(j)},
+            dag=dag,
+        )
 
-    
+        variogram_cloud = PythonOperator(
+            task_id='variogram_cloud'+str(i)+str(j),
+            python_callable=wrap_xcom_task,
+            op_kwargs={'task_function': calc_variogram_cloud, 
+                    'xcom_name': 'dist_df', 
+                    'prev_task_id': 'distance_matrix'+str(i)+str(j),
+                    'max_range': search_grid['MAX_RANGE']},
+            dag=dag,
+        )
+
+        empirical_variogram = PythonOperator(
+            task_id='empirical_variogram'+str(i)+str(j),
+            python_callable=wrap_xcom_task,
+            op_kwargs={'task_function': calc_variogram_df, 
+                    'xcom_name': 'semivar_df', 
+                    'prev_task_id': 'variogram_cloud'+str(i)+str(j), 
+                    'distance_bins': search_grid['DISTANCE_BINS']},
+            dag=dag,
+        )
+
+        semivariogram = PythonOperator(
+            task_id='semivariogram'+str(i)+str(j),
+            python_callable=wrap_xcom_task,
+            op_kwargs={'task_function': fit_semivariograms_pm, 
+                    'xcom_name': 'variogram_df', 
+                    'prev_task_id': 'empirical_variogram'+str(i)+str(j), 
+                    'max_range': search_grid['MAX_RANGE']},
+            dag=dag,
+        )
+
+        grid = PythonOperator(
+            task_id='grid'+str(i)+str(j),
+            python_callable=wrap_xcom_task,
+            op_kwargs={'task_function': get_grid_from_test_points, 
+                    'xcom_name': 'test_df', 
+                    'prev_task_id': 'test'+str(i)+str(j)},
+            dag=dag,
+        )
+
+        kriging = PythonOperator(
+            task_id='kriging'+str(i)+str(j),
+            python_callable=wrap_quadruple_xcom_task,
+            op_kwargs={'task_function': ordinary_kriging_pm, 
+                    'xcom_names': ['grid', 'distance_df', 'semivariograms', 'train_df'], 
+                    'prev_task_ids': ['grid'+str(i)+str(j), 'distance_matrix'+str(i)+str(j), 'semivariogram'+str(i)+str(j), 'train'+str(i)+str(j)], 
+                    'max_range': search_grid['MAX_RANGE']},
+            dag=dag,
+        )
+
+        statistics = PythonOperator(
+            task_id='statistics'+str(i)+str(j),
+            python_callable=wrap_double_xcom_task,
+            op_kwargs={'task_function': calc_validation_statistic, 
+                    'xcom_names': ['result_df', 'test_df'], 
+                    'prev_task_ids': ['kriging'+str(i)+str(j), 'test'+str(i)+str(j)]},
+            dag=dag,
+        )
+
+        result = PythonOperator(
+            task_id='result'+str(i)+str(j),
+            python_callable=print_xcom_task,
+            op_kwargs={'prev_task_id': 'statistics'+str(i)+str(j)},
+            dag=dag,
+        )
+
+        get_raw_data >> cross_validate_split >> [train, test]
+        train >> distance_matrix >> variogram_cloud >> empirical_variogram >> semivariogram
+        test >> grid
+        [train, grid, distance_matrix, semivariogram] >> kriging
+        [kriging, test] >> statistics >> result
