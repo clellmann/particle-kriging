@@ -35,8 +35,9 @@ dag = DAG(dag_id='live_kriging',
 
 get_raw_data = PythonOperator(
     task_id='get_raw_data',
-    python_callable=get_raw_data,
-    op_kwargs={'bounding_box': config['BOUNDING_BOX']},
+    python_callable=wrap_simple_task,
+    op_kwargs={'task_function': get_raw_data,
+               'bounding_box': config['BOUNDING_BOX']},
     dag=dag,
 )
 
@@ -81,8 +82,9 @@ semivariogram = PythonOperator(
 
 grid  = PythonOperator(
     task_id='grid',
-    python_callable=calculate_spatial_grid,
-    op_kwargs={'bounding_box': config['BOUNDING_BOX'], 
+    python_callable=wrap_simple_task,
+    op_kwargs={'task_function': calculate_spatial_grid, 
+               'bounding_box': config['BOUNDING_BOX'], 
                'distance': config['TARGET_GRID']},
     dag=dag,
 )

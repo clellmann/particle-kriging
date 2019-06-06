@@ -30,7 +30,8 @@ services:
             # - REDIS_PASSWORD=redispass
         env_file:
             - app.env
-        #volumes:
+        volumes:
+            - airflow-results:/usr/local/airflow/results
             #- ./dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
@@ -76,6 +77,8 @@ services:
             # - REDIS_PASSWORD=redispass
         env_file:
             - app.env
+        volumes:
+            - airflow-results:/usr/local/airflow/results
         command: scheduler
 
     worker:
@@ -96,8 +99,12 @@ services:
             # - REDIS_PASSWORD=redispass
         env_file:
             - app.env
+        volumes:
+            - airflow-results:/usr/local/airflow/results
         command: worker
 
 volumes:
     airflow-postgresql-volume:
+      external: true
+    airflow-results:
       external: true

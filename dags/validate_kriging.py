@@ -40,7 +40,10 @@ def get_test_data(fold, prev_task_id, **kwargs):
     Returns (pandas.DataFrame): Test data frame.
     """
     cross_val_tab = kwargs['ti'].xcom_pull(task_ids=prev_task_id)
-    return cross_val_tab[cross_val_tab['fold'] == fold]
+    result = cross_val_tab[cross_val_tab['fold'] == fold]
+    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, task_function.__name__),"wb") as file:
+        pickle.dump(result, file)
+    return result
 
 
 def get_train_data(fold, prev_task_id, **kwargs):
@@ -54,7 +57,10 @@ def get_train_data(fold, prev_task_id, **kwargs):
     Returns (pandas.DataFrame): Train data frame.
     """
     cross_val_tab = kwargs['ti'].xcom_pull(task_ids=prev_task_id)
-    return cross_val_tab[cross_val_tab['fold'] != fold]
+    result = cross_val_tab[cross_val_tab['fold'] != fold]
+    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, task_function.__name__),"wb") as file:
+        pickle.dump(result, file)
+    return result
 
 
 dag = DAG(dag_id='validate_kriging', 
@@ -68,15 +74,18 @@ for i, search_grid in enumerate(searching_grids):
     if config['EXECUTION_MODE'] == 'live-data':
         get_raw_data = PythonOperator(
             task_id='get_raw_data'+str(i),
-            python_callable=get_raw_data,
-            op_kwargs={'bounding_box': search_grid['BOUNDING_BOX']},
+            python_callable=wrap_simple_task,
+            op_kwargs={'task_function': get_raw_data,
+                    'bounding_box': search_grid['BOUNDING_BOX']},
             dag=dag,
         )
     if config['EXECUTION_MODE'] == 'db-data':
         get_raw_data = PythonOperator(
             task_id='get_raw_data'+str(i),
-            python_callable=get_raw_db_data,
-            op_kwargs={'bounding_box': search_grid['BOUNDING_BOX'], 'timestamp': search_grid['TIMESTAMP']},
+            python_callable=wrap_simple_task,
+            op_kwargs={'task_function': get_raw_db_data,
+                    'bounding_box': search_grid['BOUNDING_BOX'], 
+                    'timestamp': search_grid['TIMESTAMP']},
             dag=dag,
         )
 
