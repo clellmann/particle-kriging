@@ -51,8 +51,8 @@ get_raw_data >> distance_matrix >> variogram_cloud >> empirical_variogram >> sem
 Validate Kriging:
 
 ```
-For each grid in drid search:
-get_raw_data >> cross_validate_split >> [train, test]
+For each grid in grid search:
+get_parameters >> get_raw_data >> cross_validate_split >> [train, test]
 
 For each cross validation fold:
 train >> distance_matrix >> variogram_cloud >> empirical_variogram >> semivariogram

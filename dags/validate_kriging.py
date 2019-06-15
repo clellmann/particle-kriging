@@ -29,6 +29,22 @@ config = Variable.get('validate_kriging_config', deserialize_json=True)
 
 searching_grids = grid_search(config['PARAMS_LIVE']) if config['EXECUTION_MODE'] == 'live-data' else grid_search(config['PARAMS_DB'])
 
+
+def save_parameters(parameters, **kwargs):
+    """
+    Saves the grid search parameters of a run.
+
+    Args:
+        parameters (dict): Dict of grid search parameters.
+
+    Returns (NoneType): None.
+    """
+    print(parameters)
+    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
+        pickle.dump(parameters, file)
+    return None
+
+
 def get_test_data(fold, prev_task_id, **kwargs):
     """
     Gets the test data for given fold.
@@ -41,7 +57,7 @@ def get_test_data(fold, prev_task_id, **kwargs):
     """
     cross_val_tab = kwargs['ti'].xcom_pull(task_ids=prev_task_id)
     result = cross_val_tab[cross_val_tab['fold'] == fold]
-    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, task_function.__name__),"wb") as file:
+    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
         pickle.dump(result, file)
     return result
 
@@ -58,7 +74,7 @@ def get_train_data(fold, prev_task_id, **kwargs):
     """
     cross_val_tab = kwargs['ti'].xcom_pull(task_ids=prev_task_id)
     result = cross_val_tab[cross_val_tab['fold'] != fold]
-    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, task_function.__name__),"wb") as file:
+    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
         pickle.dump(result, file)
     return result
 
@@ -71,6 +87,13 @@ dag = DAG(dag_id='validate_kriging',
 )
 
 for i, search_grid in enumerate(searching_grids):
+    get_parameters = PythonOperator(
+        task_id='get_parameters'+str(i),
+        python_callable=save_parameters,
+        op_kwargs={'parameters': search_grid},
+        dag=dag,
+    )
+
     if config['EXECUTION_MODE'] == 'live-data':
         get_raw_data = PythonOperator(
             task_id='get_raw_data'+str(i),
@@ -190,7 +213,7 @@ for i, search_grid in enumerate(searching_grids):
             dag=dag,
         )
 
-        get_raw_data >> cross_validate_split >> [train, test]
+        get_parameters >> get_raw_data >> cross_validate_split >> [train, test]
         train >> distance_matrix >> variogram_cloud >> empirical_variogram >> semivariogram
         test >> grid
         [train, grid, distance_matrix, semivariogram] >> kriging
