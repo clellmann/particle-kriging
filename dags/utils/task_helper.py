@@ -1,4 +1,5 @@
 import pickle
+import os
 
 
 def wrap_simple_task(task_function, **kwargs):
@@ -12,7 +13,9 @@ def wrap_simple_task(task_function, **kwargs):
     Returns: Function returns as xcom.
     """
     result = task_function(**kwargs)
-    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
+    filename = "/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename,"wb") as file:
         pickle.dump(result, file)
     return result
 
@@ -34,7 +37,9 @@ def wrap_xcom_task(task_function, xcom_name, prev_task_id, **kwargs):
     xcom = ti.xcom_pull(task_ids=prev_task_id)
 
     result = task_function(**{**kwargs, **{xcom_name: xcom}})
-    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
+    filename = "/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename,"wb") as file:
         pickle.dump(result, file)
     return result
     
@@ -56,7 +61,9 @@ def wrap_double_xcom_task(task_function, xcom_names, prev_task_ids, **kwargs):
     xcom0, xcom1 = ti.xcom_pull(task_ids=prev_task_ids)
 
     result = task_function(**{**kwargs, **{xcom_names[0]: xcom0, xcom_names[1]: xcom1}})
-    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
+    filename = "/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename,"wb") as file:
         pickle.dump(result, file)
     return result
 
@@ -78,7 +85,9 @@ def wrap_triple_xcom_task(task_function, xcom_names, prev_task_ids, **kwargs):
     xcom0, xcom1, xcom2 = ti.xcom_pull(task_ids=prev_task_ids)
 
     result = task_function(**{**kwargs, **{xcom_names[0]: xcom0, xcom_names[1]: xcom1, xcom_names[2]: xcom2}})
-    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
+    filename = "/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename,"wb") as file:
         pickle.dump(result, file)
     return result
 
@@ -100,7 +109,9 @@ def wrap_quadruple_xcom_task(task_function, xcom_names, prev_task_ids, **kwargs)
     xcom0, xcom1, xcom2, xcom3 = ti.xcom_pull(task_ids=prev_task_ids)
 
     result = task_function(**{**kwargs, **{xcom_names[0]: xcom0, xcom_names[1]: xcom1, xcom_names[2]: xcom2, xcom_names[3]: xcom3}})
-    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
+    filename = "/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename,"wb") as file:
         pickle.dump(result, file)
     return result
 

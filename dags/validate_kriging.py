@@ -1,3 +1,4 @@
+import os
 import sys
 sys.path.insert(0, "functions")
 sys.path.insert(0, "utils")
@@ -40,7 +41,9 @@ def save_parameters(parameters, **kwargs):
     Returns (NoneType): None.
     """
     print(parameters)
-    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
+    filename = "/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename,"wb") as file:
         pickle.dump(parameters, file)
     return None
 
@@ -57,7 +60,9 @@ def get_test_data(fold, prev_task_id, **kwargs):
     """
     cross_val_tab = kwargs['ti'].xcom_pull(task_ids=prev_task_id)
     result = cross_val_tab[cross_val_tab['fold'] == fold]
-    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
+    filename = "/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename,"wb") as file:
         pickle.dump(result, file)
     return result
 
@@ -74,7 +79,9 @@ def get_train_data(fold, prev_task_id, **kwargs):
     """
     cross_val_tab = kwargs['ti'].xcom_pull(task_ids=prev_task_id)
     result = cross_val_tab[cross_val_tab['fold'] != fold]
-    with open("/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id),"wb") as file:
+    filename = "/usr/local/airflow/results/{0}/{1}.pkl".format(kwargs['dag_run'].run_id, kwargs['task'].task_id)
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
+    with open(filename,"wb") as file:
         pickle.dump(result, file)
     return result
 
