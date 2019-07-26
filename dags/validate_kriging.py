@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.models import Variable
+import pickle
 
 default_args = {
     'owner' : 'kriging',
