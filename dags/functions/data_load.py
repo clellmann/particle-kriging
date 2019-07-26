@@ -80,41 +80,46 @@ def get_raw_db_data(bounding_box, timestamp, **kwargs):
     
     Returns (pandas.DataFrame): Data Frame containing the raw PM data.
     """
-    def add_10min(timestamp):
+    def add_2h(timestamp):
         """
-        Adds 10 min to a timestamp string.
+        Adds 2 h to a timestamp string.
         
         Args:
             timestamp (str): Input timestamp time is added to
         Returns:
             str: Later timestamp
         """
-        return (datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S") + timedelta(minutes=10)).strftime("%Y-%m-%d %H:%M:%S")
+        return (datetime.strptime(START_TIME, "%Y-%m-%d %H:%M:%S") + timedelta(hours=2)).strftime("%Y-%m-%d %H:%M:%S")
 
-    INT_TS1 = add_10min(timestamp)
-    INT_TS2 = add_10min(INT_TS1)
+    def substract_2h(timestamp):
+        """
+        Substracts 2 h to a timestamp string.
+        
+        Args:
+            timestamp (str): Input timestamp time is added to
+        Returns:
+            str: Later timestamp
+        """
+        return (datetime.strptime(START_TIME, "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)).strftime("%Y-%m-%d %H:%M:%S")
+
+    INT_TS1 = add_2h(START_TIME)
+    INT_TS2 = substract_2h(START_TIME)
 
     dynamodb = boto3.resource('dynamodb', region_name='us-west-1', aws_access_key_id=os.environ['ACCESS_KEY'], aws_secret_access_key=os.environ['SECRET'])
     table = dynamodb.Table('luftdaten')
-    response = table.scan(FilterExpression=Attr('timestamp').contains(timestamp[:15]) | 
-                        Attr('timestamp').contains(INT_TS1[:15]) | 
-                        Attr('timestamp').contains(INT_TS2[:15]),
+    response = table.scan(FilterExpression=Attr('timestamp').contains(timestamp[:10]),
                         ProjectionExpression='sensordatavalues, #t, sensor.id, #l.longitude, #l.latitude, #l.altitude',
                         ExpressionAttributeNames = {'#t': 'timestamp', '#l': 'location'})
     response_items = response['Items']
 
-    i = 0
     while 'LastEvaluatedKey' in response:
         response = table.scan(ExclusiveStartKey=response['LastEvaluatedKey'],
-                            FilterExpression=Attr('timestamp').contains(timestamp[:15]) | 
-                            Attr('timestamp').contains(INT_TS1[:15]) | 
-                            Attr('timestamp').contains(INT_TS2[:15]),
+                            FilterExpression=Attr('timestamp').contains(timestamp[:10]),
                             ProjectionExpression='sensordatavalues, #t, sensor.id, #l.longitude, #l.latitude, #l.altitude',
                             ExpressionAttributeNames = {'#t': 'timestamp', '#l': 'location'})
         response_items.extend(response['Items'])
-        i += 1
-        #if i == 10:
-         #   break
+
+    response_items = [item for item in response_items if INT_TS2 <= item['timestamp'] <= INT_TS1]
     base_df = pd.DataFrame(filter_anomalous_pm(transform_pm_data(response_items, bounding_box)))
     base_df['id'] = base_df.index
     return base_df
