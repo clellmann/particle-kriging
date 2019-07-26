@@ -1,4 +1,5 @@
 import pandas as pd
+from haversine import haversine
 
 
 def calculate_dist_matrix(base_df, **kwargs):
