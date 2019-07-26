@@ -36,7 +36,7 @@ dag = DAG(dag_id='live_kriging',
 get_raw_data = PythonOperator(
     task_id='get_raw_data',
     python_callable=wrap_simple_task,
-    op_kwargs={'task_function': get_raw_data,
+    op_kwargs={'task_function': get_raw_live_data,
                'bounding_box': config['BOUNDING_BOX']},
     dag=dag,
 )
