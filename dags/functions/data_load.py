@@ -42,7 +42,7 @@ def filter_anomalous_pm(pm_data):
     return [data for data in pm_data if (data.get('P1') is not None and data.get('P1') < 1000) and (data.get('P2') is not None and data.get('P2') < 1000)]
 
 
-def get_raw_data(bounding_box, **kwargs):
+def get_raw_live_data(bounding_box, **kwargs):
     """
     Downloads the current raw data.
 

@@ -106,7 +106,7 @@ for i, search_grid in enumerate(searching_grids):
         get_raw_data = PythonOperator(
             task_id='get_raw_data'+str(i),
             python_callable=wrap_simple_task,
-            op_kwargs={'task_function': get_raw_data,
+            op_kwargs={'task_function': get_raw_live_data,
                     'bounding_box': search_grid['BOUNDING_BOX']},
             dag=dag,
         )
