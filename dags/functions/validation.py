@@ -43,7 +43,7 @@ def calc_validation_statistic(result_df, test_df, **kwargs):
 
     Returns (dict): Statistics dict.
     """
-    joined_df = pd.merge(result_df, test_df, on=['fold', 'fold2'], suffixes=('_result', '_test'))
+    joined_df = pd.merge(result_df, test_df, left_on=['latitude','longitude'], right_on = ['latitude','longitude'], suffixes=('_result', '_test'))
     rmse_p1 = np.sqrt(np.mean((joined_df['P1_result'] - joined_df['P1_test'])**2))
     rmse_p2 = np.sqrt(np.mean((joined_df['P2_result'] - joined_df['P2_test'])**2))
 

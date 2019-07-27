@@ -46,11 +46,11 @@ def ordinary_kriging_pm(grid, distance_df, semivariograms, train_df, max_range, 
         result = {}
         points_in_range = train_df
         points_in_range['distances'] = points_in_range.apply(lambda row: haversine((row['latitude'], row['longitude']), point)*1000, axis = 1)
+        points_in_range = points_in_range[points_in_range['distances'] <= max_range]
+        distance_vector = points_in_range.sort_values(by=['id'])['distances'].values.reshape((points_in_range.sort_values(by=['id'])['distances'].values.shape[0], 1))
+        distance_df_in_range = distance_df[np.isin(distance_df['id_x'], points_in_range['id'].values) & np.isin(distance_df['id_y'], points_in_range['id'].values)]
+        distance_matrix = np.matrix(np.split(distance_df_in_range.sort_values(by=['id_x', 'id_y'])['dist'].values, len(points_in_range)))
         for pm in semivariograms.keys():
-            points_in_range = points_in_range[points_in_range['distances'] <= max_range]
-            distance_vector = points_in_range.sort_values(by=['id'])['distances'].values.reshape((points_in_range.sort_values(by=['id'])['distances'].values.shape[0], 1))
-            distance_df_in_range = distance_df[np.isin(distance_df['id_x'], points_in_range['id'].values) & np.isin(distance_df['id_y'], points_in_range['id'].values)]
-            distance_matrix = np.matrix(np.split(distance_df_in_range.sort_values(by=['id_x', 'id_y'])['dist'].values, len(points_in_range)))
             train_values = points_in_range.sort_values(by=['id'])[pm].values.reshape((points_in_range.sort_values(by=['id'])[pm].values.shape[0], 1))
             particulate_matter, std = krige_point(distance_vector, distance_matrix, semivariograms[pm], train_values)
             result.update({pm: particulate_matter, 'std_'+pm: std}) 
