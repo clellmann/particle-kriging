@@ -80,30 +80,30 @@ def get_raw_db_data(bounding_box, timestamp, **kwargs):
     
     Returns (pandas.DataFrame): Data Frame containing the raw PM data.
     """
-    def add_2h(timestamp):
+    def add_time(timestamp):
         """
-        Adds 2 h to a timestamp string.
+        Adds time to a timestamp string.
         
         Args:
             timestamp (str): Input timestamp time is added to
         Returns:
             str: Later timestamp
         """
-        return (datetime.strptime(START_TIME, "%Y-%m-%d %H:%M:%S") + timedelta(hours=2)).strftime("%Y-%m-%d %H:%M:%S")
+        return (datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S") + timedelta(minutes=30)).strftime("%Y-%m-%d %H:%M:%S")
 
-    def substract_2h(timestamp):
+    def substract_time(timestamp):
         """
-        Substracts 2 h to a timestamp string.
+        Substracts time to a timestamp string.
         
         Args:
             timestamp (str): Input timestamp time is added to
         Returns:
             str: Later timestamp
         """
-        return (datetime.strptime(START_TIME, "%Y-%m-%d %H:%M:%S") - timedelta(hours=2)).strftime("%Y-%m-%d %H:%M:%S")
+        return (datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S") - timedelta(minutes=20)).strftime("%Y-%m-%d %H:%M:%S")
 
-    INT_TS1 = add_2h(START_TIME)
-    INT_TS2 = substract_2h(START_TIME)
+    INT_TS1 = add_time(timestamp)
+    INT_TS2 = substract_time(timestamp)
 
     dynamodb = boto3.resource('dynamodb', region_name='us-west-1', aws_access_key_id=os.environ['ACCESS_KEY'], aws_secret_access_key=os.environ['SECRET'])
     table = dynamodb.Table('luftdaten')
