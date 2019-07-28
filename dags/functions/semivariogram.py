@@ -97,7 +97,7 @@ def calc_variogram_cloud(dist_df, max_range, **kwargs):
 
     Returns (pandas.DataFrame):Data Frame containing the variogram cloud.
     """    
-    semivar_df = dist_df[['id_x', 'id_y', 'dist', 'time_diff']].query('id_x < id_y').query('dist < {0}'.format(max_range))
+    semivar_df = dist_df[['id_x', 'id_y', 'dist', 'time_diff']].query('id_x <= id_y').query('dist < {0}'.format(max_range))
     semivar_df['P1_semivar'] = np.square(dist_df['P1_diff'])/2
     semivar_df['P2_semivar'] = np.square(dist_df['P2_diff'])/2
 
