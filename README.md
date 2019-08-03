@@ -35,7 +35,7 @@ The running airflow instance can be browsed at `localhost:9090/admin`.
 
 There the Workflow DAGs can be operated and triggered.
 
-Results of the tasks can be found in docker container at `/usr/local/airflow/results`.
+Results of the tasks can be found in docker container at `/usr/local/airflow/results` or in the docker volume `airflow-results`.
 
 ## Workflows
 
