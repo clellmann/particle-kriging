@@ -17,6 +17,7 @@ Then, persistent volumes for results and the airflow postgres metadata tables mu
 docker volume create airflow-postgresql-volume
 docker volume create airflow-results
 ```
+> Alternatively for results storing, it is also possible to use host volumes where files shall be stored. Must be then adapted in the `volume` sections in `docker-compose.yml` and `docker-compose-CeleryExecutor.yml`.
 
 After the images are created the airflow composition must be run.  
 For the Local Executor run
@@ -35,7 +36,7 @@ The running airflow instance can be browsed at `localhost:9090/admin`.
 
 There the Workflow DAGs can be operated and triggered.
 
-Results of the tasks can be found in docker container at `/usr/local/airflow/results` or in the docker volume `airflow-results`.
+Results of the tasks can be found in docker container at `/usr/local/airflow/results` or in the docker volume `airflow-results`/mounted host path.
 
 ## Workflows
 
