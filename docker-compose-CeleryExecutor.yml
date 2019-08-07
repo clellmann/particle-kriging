@@ -15,7 +15,7 @@ services:
             - airflow-postgresql-volume:/var/lib/postgresql/data
 
     webserver:
-        image: clellmann/kriging-airflow:1.10.3
+        image: clellmann/kriging-airflow:1.10.4
         restart: always
         depends_on:
             - postgres
@@ -45,7 +45,7 @@ services:
             retries: 3
 
     flower:
-        image: clellmann/kriging-airflow:1.10.3
+        image: clellmann/kriging-airflow:1.10.4
         restart: always
         depends_on:
             - redis
@@ -59,7 +59,7 @@ services:
         command: flower
 
     scheduler:
-        image: clellmann/kriging-airflow:1.10.3
+        image: clellmann/kriging-airflow:1.10.4
         restart: always
         depends_on:
             - webserver
@@ -82,7 +82,7 @@ services:
         command: scheduler
 
     worker:
-        image: clellmann/kriging-airflow:1.10.3
+        image: clellmann/kriging-airflow:1.10.4
         restart: always
         depends_on:
             - scheduler

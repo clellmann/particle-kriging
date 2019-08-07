@@ -11,7 +11,7 @@ services:
             - airflow-postgresql-volume:/var/lib/postgresql/data
 
     webserver:
-        image: clellmann/kriging-airflow:1.10.3
+        image: clellmann/kriging-airflow:1.10.4
         restart: always
         depends_on:
             - postgres
