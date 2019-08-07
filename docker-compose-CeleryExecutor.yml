@@ -22,7 +22,7 @@ services:
             - redis
         environment:
             - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - FERNET_KEY=S7ZRZega9qzb5CB96SqAsASbvncNcnZ0fBfbqtIgiqA=
             - EXECUTOR=Celery
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
@@ -31,7 +31,7 @@ services:
         env_file:
             - app.env
         volumes:
-            - airflow-results:/usr/local/airflow/results
+            - C:\Users\chris\OneDrive\Dokumente\Master\"Modul 60100"\particle-kriging\data:/usr/local/airflow/results
             #- ./dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
@@ -69,7 +69,7 @@ services:
             # - ./plugins:/usr/local/airflow/plugins
         environment:
             - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - FERNET_KEY=S7ZRZega9qzb5CB96SqAsASbvncNcnZ0fBfbqtIgiqA=
             - EXECUTOR=Celery
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
@@ -78,7 +78,7 @@ services:
         env_file:
             - app.env
         volumes:
-            - airflow-results:/usr/local/airflow/results
+            - C:\Users\chris\OneDrive\Dokumente\Master\"Modul 60100"\particle-kriging\data:/usr/local/airflow/results
         command: scheduler
 
     worker:
@@ -91,7 +91,7 @@ services:
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
         environment:
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - FERNET_KEY=S7ZRZega9qzb5CB96SqAsASbvncNcnZ0fBfbqtIgiqA=
             - EXECUTOR=Celery
             # - POSTGRES_USER=airflow
             # - POSTGRES_PASSWORD=airflow
@@ -100,7 +100,7 @@ services:
         env_file:
             - app.env
         volumes:
-            - airflow-results:/usr/local/airflow/results
+            - C:\Users\chris\OneDrive\Dokumente\Master\"Modul 60100"\particle-kriging\data:/usr/local/airflow/results
         command: worker
 
 volumes:
