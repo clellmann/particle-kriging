@@ -45,8 +45,8 @@ distance_matrix = PythonOperator(
     task_id='distance_matrix',
     python_callable=wrap_xcom_task,
     op_kwargs={'task_function': calculate_dist_matrix, 
-               'xcom_name': 'base_df', 
-               'prev_task_id': 'get_raw_data'},
+               'xcom_names': ['base_df'], 
+               'prev_task_ids': ['get_raw_data']},
     dag=dag,
 )
 
@@ -54,8 +54,8 @@ variogram_cloud = PythonOperator(
     task_id='variogram_cloud',
     python_callable=wrap_xcom_task,
     op_kwargs={'task_function': calc_variogram_cloud, 
-               'xcom_name': 'dist_df', 
-               'prev_task_id': 'distance_matrix',
+               'xcom_names': ['dist_df'], 
+               'prev_task_ids': ['distance_matrix'],
                'max_range': config['MAX_RANGE']},
     dag=dag,
 )
@@ -64,8 +64,8 @@ empirical_variogram = PythonOperator(
     task_id='empirical_variogram',
     python_callable=wrap_xcom_task,
     op_kwargs={'task_function': calc_variogram_df, 
-               'xcom_name': 'semivar_df', 
-               'prev_task_id': 'variogram_cloud', 
+               'xcom_names': ['semivar_df'], 
+               'prev_task_ids': ['variogram_cloud'], 
                'distance_bins': config['DISTANCE_BINS']},
     dag=dag,
 )
@@ -74,8 +74,8 @@ semivariogram = PythonOperator(
     task_id='semivariogram',
     python_callable=wrap_xcom_task,
     op_kwargs={'task_function': fit_semivariograms_pm, 
-               'xcom_name': 'variogram_df', 
-               'prev_task_id': 'empirical_variogram', 
+               'xcom_names': ['variogram_df'], 
+               'prev_task_ids': ['empirical_variogram'], 
                'max_range': config['MAX_RANGE']},
     dag=dag,
 )
@@ -91,7 +91,7 @@ grid  = PythonOperator(
 
 kriging = PythonOperator(
     task_id='kriging',
-    python_callable=wrap_quadruple_xcom_task,
+    python_callable=wrap_xcom_task,
     op_kwargs={'task_function': ordinary_kriging_pm, 
                'xcom_names': ['grid', 'distance_df', 'semivariograms', 'train_df'], 
                'prev_task_ids': ['grid', 'distance_matrix', 'semivariogram', 'get_raw_data'], 
@@ -102,7 +102,7 @@ kriging = PythonOperator(
 result = PythonOperator(
     task_id='result',
     python_callable=print_xcom_task,
-    op_kwargs={'prev_task_id': 'kriging'},
+    op_kwargs={'prev_task_ids': ['kriging']},
     dag=dag,
 )
 

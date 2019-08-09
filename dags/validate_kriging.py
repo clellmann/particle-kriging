@@ -2,6 +2,7 @@ import os
 import sys
 sys.path.insert(0, "functions")
 sys.path.insert(0, "utils")
+from functions.benchmark import *
 from functions.data_load import *
 from functions.distance_matrix import *
 from functions.grid import *
@@ -124,9 +125,34 @@ for i, search_grid in enumerate(searching_grids):
         task_id='cross_validate_split'+str(i),
         python_callable=wrap_xcom_task,
         op_kwargs={'task_function': cross_validation_split, 
-                   'xcom_name': 'raw_data', 
-                   'prev_task_id': 'get_raw_data'+str(i), 
+                   'xcom_names': ['raw_data'], 
+                   'prev_task_ids': ['get_raw_data'+str(i)], 
                    'folds': config['CROSS_VALIDATION_FOLDS']},
+        dag=dag,
+    )
+
+    overall_statistics = PythonOperator(
+        task_id='overall_statistics'+str(i),
+        python_callable=wrap_xcom_list_task,
+        op_kwargs={'task_function': calc_validation_statistic_overall,
+                   'prev_task_ids': ['statistics'+str(i)+str(j) for j in range(config['CROSS_VALIDATION_FOLDS'])]
+                   },
+        dag=dag,
+    )
+
+    overall_benchmark = PythonOperator(
+        task_id='overall_benchmark'+str(i),
+        python_callable=wrap_xcom_list_task,
+        op_kwargs={'task_function': calc_benchmark_mean_statistic_overall,
+                   'prev_task_ids': ['benchmark'+str(i)+str(j) for j in range(config['CROSS_VALIDATION_FOLDS'])]
+                   },
+        dag=dag,
+    )
+
+    overall_result = PythonOperator(
+        task_id='overall_result'+str(i),
+        python_callable=print_xcom_task,
+        op_kwargs={'prev_task_ids': ['overall_statistics'+str(i), 'overall_benchmark'+str(i)]},
         dag=dag,
     )
 
@@ -151,8 +177,8 @@ for i, search_grid in enumerate(searching_grids):
             task_id='distance_matrix'+str(i)+str(j),
             python_callable=wrap_xcom_task,
             op_kwargs={'task_function': calculate_dist_matrix, 
-                    'xcom_name': 'base_df', 
-                    'prev_task_id': 'train'+str(i)+str(j)},
+                    'xcom_names': ['base_df'], 
+                    'prev_task_ids': ['train'+str(i)+str(j)]},
             dag=dag,
         )
 
@@ -160,8 +186,8 @@ for i, search_grid in enumerate(searching_grids):
             task_id='variogram_cloud'+str(i)+str(j),
             python_callable=wrap_xcom_task,
             op_kwargs={'task_function': calc_variogram_cloud, 
-                    'xcom_name': 'dist_df', 
-                    'prev_task_id': 'distance_matrix'+str(i)+str(j),
+                    'xcom_names': ['dist_df'], 
+                    'prev_task_ids': ['distance_matrix'+str(i)+str(j)],
                     'max_range': search_grid['MAX_RANGE']},
             dag=dag,
         )
@@ -170,8 +196,8 @@ for i, search_grid in enumerate(searching_grids):
             task_id='empirical_variogram'+str(i)+str(j),
             python_callable=wrap_xcom_task,
             op_kwargs={'task_function': calc_variogram_df, 
-                    'xcom_name': 'semivar_df', 
-                    'prev_task_id': 'variogram_cloud'+str(i)+str(j), 
+                    'xcom_names': ['semivar_df'], 
+                    'prev_task_ids': ['variogram_cloud'+str(i)+str(j)], 
                     'distance_bins': search_grid['DISTANCE_BINS']},
             dag=dag,
         )
@@ -180,8 +206,8 @@ for i, search_grid in enumerate(searching_grids):
             task_id='semivariogram'+str(i)+str(j),
             python_callable=wrap_xcom_task,
             op_kwargs={'task_function': fit_semivariograms_pm, 
-                    'xcom_name': 'variogram_df', 
-                    'prev_task_id': 'empirical_variogram'+str(i)+str(j), 
+                    'xcom_names': ['variogram_df'], 
+                    'prev_task_ids': ['empirical_variogram'+str(i)+str(j)], 
                     'max_range': search_grid['MAX_RANGE']},
             dag=dag,
         )
@@ -190,14 +216,14 @@ for i, search_grid in enumerate(searching_grids):
             task_id='grid'+str(i)+str(j),
             python_callable=wrap_xcom_task,
             op_kwargs={'task_function': get_grid_from_test_points, 
-                    'xcom_name': 'test_df', 
-                    'prev_task_id': 'test'+str(i)+str(j)},
+                    'xcom_names': ['test_df'], 
+                    'prev_task_ids': ['test'+str(i)+str(j)]},
             dag=dag,
         )
 
         kriging = PythonOperator(
             task_id='kriging'+str(i)+str(j),
-            python_callable=wrap_quadruple_xcom_task,
+            python_callable=wrap_xcom_task,
             op_kwargs={'task_function': ordinary_kriging_pm, 
                     'xcom_names': ['grid', 'distance_df', 'semivariograms', 'train_df'], 
                     'prev_task_ids': ['grid'+str(i)+str(j), 'distance_matrix'+str(i)+str(j), 'semivariogram'+str(i)+str(j), 'train'+str(i)+str(j)], 
@@ -207,17 +233,26 @@ for i, search_grid in enumerate(searching_grids):
 
         statistics = PythonOperator(
             task_id='statistics'+str(i)+str(j),
-            python_callable=wrap_double_xcom_task,
+            python_callable=wrap_xcom_task,
             op_kwargs={'task_function': calc_validation_statistic, 
                     'xcom_names': ['result_df', 'test_df'], 
                     'prev_task_ids': ['kriging'+str(i)+str(j), 'test'+str(i)+str(j)]},
             dag=dag,
         )
 
+        benchmark = PythonOperator(
+            task_id='benchmark'+str(i)+str(j),
+            python_callable=wrap_xcom_task,
+            op_kwargs={'task_function': calc_benchmark_mean_statistic, 
+                    'xcom_names': ['train_df', 'test_df'], 
+                    'prev_task_ids': ['train'+str(i)+str(j), 'test'+str(i)+str(j)]},
+            dag=dag,
+        )
+
         result = PythonOperator(
             task_id='result'+str(i)+str(j),
             python_callable=print_xcom_task,
-            op_kwargs={'prev_task_id': 'statistics'+str(i)+str(j)},
+            op_kwargs={'prev_task_ids': ['statistics'+str(i)+str(j), 'benchmark'+str(i)+str(j)]},
             dag=dag,
         )
 
@@ -225,4 +260,6 @@ for i, search_grid in enumerate(searching_grids):
         train >> distance_matrix >> variogram_cloud >> empirical_variogram >> semivariogram
         test >> grid
         [train, grid, distance_matrix, semivariogram] >> kriging
-        [kriging, test] >> statistics >> result
+        [kriging, test] >> statistics >> [overall_statistics, result]
+        [train, test] >> benchmark >> [overall_benchmark, result]
+        [overall_statistics, overall_benchmark] >> overall_result

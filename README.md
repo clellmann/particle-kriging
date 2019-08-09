@@ -59,11 +59,15 @@ For each cross validation fold:
 train >> distance_matrix >> variogram_cloud >> empirical_variogram >> semivariogram
 test >> grid
 [train, grid, distance_matrix, semivariogram] >> kriging
-[kriging, test] >> statistics >> result
+[kriging, test] >> statistics >> [overall_statistics, result]
+[train, test] >> benchmark >> [overall_benchmark, result]
+
+For each grid in grid search:
+[overall_statistics, overall_benchmark] >> overall_result
 ```
 
 ## Results
 
-For each step of the kriging workflow you can find the corresponding data at result path `/usr/local/airflow/results`.
+For each step of the kriging workflow you can find the corresponding data at result path `/usr/local/airflow/results` or in volumes.
 
-Also the statistics (RMSE against test data) and the final result of live kriging (predicted value grid) are printed in last task.
+Also the statistics (RMSE against test data) vs. a mean predictor benchmark statistic and the final result of live kriging (predicted value grid) are printed in last task.
