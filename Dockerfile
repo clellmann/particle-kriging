@@ -1,4 +1,4 @@
-# VERSION 1.10.3
+# VERSION 1.10.4
 # AUTHOR: Christian Lellmann
 # DESCRIPTION: Kriging system Airflow container
 # BUILD: docker build --rm -t clellmann/kriging-airflow .
