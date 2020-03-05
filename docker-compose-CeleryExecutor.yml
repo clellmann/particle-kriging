@@ -31,7 +31,7 @@ services:
         env_file:
             - app.env
         volumes:
-            - C:\Users\chris\OneDrive\Dokumente\Master\"Modul 60100"\particle-kriging\data:/usr/local/airflow/results
+            - C:\Users\chris\OneDrive\Dokumente\Master\'Modul 60100'\particle-kriging\data:/usr/local/airflow/results
             #- ./dags:/usr/local/airflow/dags
             # Uncomment to include custom plugins
             # - ./plugins:/usr/local/airflow/plugins
@@ -78,7 +78,7 @@ services:
         env_file:
             - app.env
         volumes:
-            - C:\Users\chris\OneDrive\Dokumente\Master\"Modul 60100"\particle-kriging\data:/usr/local/airflow/results
+            - C:\Users\chris\OneDrive\Dokumente\Master\'Modul 60100'\particle-kriging\data:/usr/local/airflow/results
         command: scheduler
 
     worker:
@@ -100,7 +100,7 @@ services:
         env_file:
             - app.env
         volumes:
-            - C:\Users\chris\OneDrive\Dokumente\Master\"Modul 60100"\particle-kriging\data:/usr/local/airflow/results
+            - C:\Users\chris\OneDrive\Dokumente\Master\'Modul 60100'\particle-kriging\data:/usr/local/airflow/results
         command: worker
 
 volumes:
